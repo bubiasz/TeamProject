@@ -8,18 +8,21 @@ export default function ImageSlider({ imageUrls }: ImageSliderProps) {
   const [imageIndex, setImageIndex] = useState(0);
 
   return (
-    <div className="w-96 h-96 relative  overflow-hidden">
-    <div className={`w-full h-full transition-all flex`} style={{
-      translate: `${-100 * imageIndex}%`
-    }}>
+    <div className="w-96 h-96 relative overflow-hidden">
+      <div
+        className={`w-full h-full transition-all flex`}
+        style={{
+          translate: `${-100 * imageIndex}%`,
+        }}
+      >
         {imageUrls.map((url) => {
-          return(
+          return (
             <img
               key={url}
               src={url}
               className={`object-cover w-full h-full block box-border shrink-0 grow-0`}
             />
-          )
+          );
         })}
       </div>
       <button
@@ -30,7 +33,7 @@ export default function ImageSlider({ imageUrls }: ImageSliderProps) {
           setImageIndex(nextIndex);
         }}
       >
-        <FaChevronLeft />
+        <FaChevronLeft className="fill-black"/>
       </button>
       <button
         className="absolute block top-0 bottom-0 p-4 cursor-pointer right-0"
@@ -40,7 +43,7 @@ export default function ImageSlider({ imageUrls }: ImageSliderProps) {
           setImageIndex(nextIndex);
         }}
       >
-        <FaChevronRight />
+        <FaChevronRight className="fill-black"/>
       </button>
     </div>
   );
