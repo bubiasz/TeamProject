@@ -10,12 +10,20 @@ import botocore.exceptions as exceptions
 from dotenv import load_dotenv
 from pydantic import BaseModel
 import matplotlib.pyplot as plt
-from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi import FastAPI, HTTPException, UploadFile, CORSMiddleware
 
 from facade import ModelFacade
 
 
 app = FastAPI()
+
+app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+)
 
 base = os.getcwd()
 
