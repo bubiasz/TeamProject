@@ -2,12 +2,11 @@ import React, { useState } from "react";
 import ReactDOM from "react-dom";
 
 import "./index.scss";
-import { Background } from "./components/background";
+import { Background } from "./components/Background";
 import { Input } from "react-daisyui";
 import { IoSend } from "react-icons/io5";
 import axios, { HttpStatusCode } from "axios";
 import ImageSlider from "./components/ImageSlider";
-import parseJson, { JSONError } from "parse-json";
 
 type Response = {
   predictions: {
@@ -22,10 +21,6 @@ type Response = {
   activation_urls: string[];
 };
 
-type Prediction = {
-  name: string;
-  probability: number;
-};
 
 const App = () => {
   const [file, setFile] = useState<File | null>(null);
