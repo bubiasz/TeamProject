@@ -6,12 +6,25 @@ import { Background } from "./components/background";
 import { Input } from "react-daisyui";
 import { IoSend } from "react-icons/io5";
 import axios, { HttpStatusCode } from "axios";
+import ImageSlider from "./components/ImageSlider";
+import parseJson, { JSONError } from "parse-json";
 
 type Response = {
-  predictions: Map<string, [string, number]>;
+  predictions: {
+    "1": [string, number];
+    "2": [string, number];
+    "3": [string, number];
+    "4": [string, number];
+    "5": [string, number];
+  };
   original_img_url: string;
   scaled_img_url: string;
-  activation_urls: string;
+  activation_urls: string[];
+};
+
+type Prediction = {
+  name: string;
+  probability: number;
 };
 
 const App = () => {
@@ -20,42 +33,31 @@ const App = () => {
 
   const [response, setResponse] = useState<Response | null>(null);
   async function getPrediction() {
-    const map = new Map<string, [string, number]>();
-    const r: Response = {
-      predictions: map,
-      activation_urls: "",
-      original_img_url: "",
-      scaled_img_url: "",
-    };
-    setResponse(r);
-    /*var formdata = new FormData();
-   if (!file) {
+    var formdata = new FormData();
+    if (!file) {
       return;
     }
     formdata.append("photo", file, "/C:/Users/Piotr/Pictures/goodkid.png");
-
-    var requestOptions = {
-      method: "POST",
-      body: formdata,
-      redirect: "follow",
-    };
-
-    fetch("http://3.79.99.236:8000/upload", {
-      method: "POST",
-      body: formdata,
-      redirect: "follow"
-    })
-      .then((r) => r.text())
-      .then((result) => console.log(result))
-      .catch((error) => console.log("error", error));
-    */
+    await axios
+      .post<Response>("http://3.79.99.236:8000/upload", formdata)
+      .then((res) => {
+        if (res.status != HttpStatusCode.Ok) {
+          return;
+        }
+        setResponse(res.data);
+        console.log(res.data);
+      });
   }
 
   return (
     <div className="snap-y snap-mandatory h-screen overflow-y-scroll scroll-smooth">
       <Background />
-      <section className="grid grid-cols-2 place-items-center h-screen snap-start">
-        <section>
+      <section className="relative h-screen snap-start">
+        <section
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 transition-all ${
+            response != null ? "-translate-x-[calc(100%+1rem)]" : ""
+          }`}
+        >
           <div className="w-96 h-96 aspect-square bg-slate-900 flex flex-col rounded-md box-content p-2">
             <div className="grow flex items-center justify-center">
               {file ? (
@@ -78,6 +80,7 @@ const App = () => {
                 type="file"
                 className="file-input file-input-ghost w-full"
                 onChange={(e) => {
+                  setResponse(null)
                   if (!e.target.files || e.target.files.length <= 0) {
                     setFile(null);
                     setFileUrl("");
@@ -93,15 +96,23 @@ const App = () => {
             </form>
           </div>
         </section>
-        <section>
+        <section
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all ${
+            response != null ? "translate-x-4" : ""
+          }`}
+        >
+          {" "}
           <div className="w-96 h-96 aspect-square bg-slate-900 flex flex-col rounded-md box-content p-2">
             <div className="grow flex items-center justify-center w-96">
               {response ? (
                 <div>
-                  <img src={fileUrl} className="object-cover w-96 h-80" />
+                  <img
+                    src={response.scaled_img_url}
+                    className="object-cover w-96 h-80"
+                  />
                   <div className="flex h-16 items-center">
-                    {" "}
-                    Prediction: Mallard <br /> Probability: 12.41%
+                    Prediction: {response.predictions[1][0]} <br />
+                    Probability: {response.predictions[1][1]}%
                   </div>
                 </div>
               ) : (
@@ -112,29 +123,27 @@ const App = () => {
         </section>
       </section>
       {response ? (
-        <section className="grid grid-cols-2 place-items-center h-screen snap-start">
-          <div className="carousel w-full">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9,10].map((i) => {
-              var next = i + 1, prev = i-1
-              if (next >= 10) next = 0
-              if (prev <= 0 ) prev = 10
-              return (
-                <div id={`#slide${i}`} className="carousel-item relative w-full">
-                  <img
-                    src={`/prototype_activation_map_by_top-${i}_prototype.png`}
-                    className="w-full"
-                  />
-                  <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
-                    <a href={`#slide${prev}`} className="btn btn-circle">
-                      ❮
-                    </a>
-                    <a href={`#slide${next}`} className="btn btn-circle">
-                      ❯
-                    </a>
-                  </div>
-                </div>
-              );
-            })}
+        <section className="grid items-center h-screen snap-start">
+          <div className="grid grid-cols-2 place-items-center bg-slate-900 rounded-md p-2">
+            <ImageSlider imageUrls={response.activation_urls} />
+            <div className="flex flex-col items-center">
+              <div className="flex gap-2">
+                <div>Prediction: {response.predictions[2][0]}</div>
+                <div>Probability: {response.predictions[2][1]}%</div>
+              </div>
+              <div className="flex gap-2">
+              <div>Prediction: {response.predictions[3][0]}</div>
+                <div>Probability: {response.predictions[3][1]}%</div>
+              </div>
+              <div className="flex gap-2">
+              <div>Prediction: {response.predictions[4][0]}</div>
+                <div>Probability: {response.predictions[4][1]}%</div>
+              </div>
+              <div className="flex gap-2">
+              <div>Prediction: {response.predictions[5][0]}</div>
+                <div>Probability: {response.predictions[5][1]}%</div>
+              </div>
+            </div>
           </div>
         </section>
       ) : (
