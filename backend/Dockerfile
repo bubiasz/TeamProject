@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY main.py model.py facade.py vgg_features.py /app
+COPY main.py model.py facade.py vgg_features.py /app/
 COPY models /app/models
 COPY requirements.txt /app
 
