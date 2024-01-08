@@ -121,7 +121,8 @@ class ModelFacade(object):
         topk = torch.topk(torch.softmax(logits, dim=1), k=5)
 
         predictions = {k: v for k, v in zip(range(1, 6), zip(
-            (self.__species[i] for i in topk.indices[0].cpu().detach().numpy()),
+            (self.__species[i][0] for i in topk.indices[0].cpu().detach().numpy()),
+            (self.__species[i][1] for i in topk.indices[0].cpu().detach().numpy()),
             (round(i * 100, 2) for i in topk.values[0].cpu().detach().numpy())
         ))}
 
