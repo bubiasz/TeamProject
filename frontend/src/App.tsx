@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import ReactDOM from "react-dom";
 
-import "./index.scss";
+import "./index.css";
 import { Background } from "./components/Background";
 import { Input } from "react-daisyui";
 import { IoSend } from "react-icons/io5";
@@ -9,45 +9,73 @@ import axios, { HttpStatusCode } from "axios";
 import ImageSlider from "./components/ImageSlider";
 import PredictionSlider from "./components/PredictionSlider";
 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Toast } from "react-toastify/dist/types";
+
 type Response = {
   predictions: {
-    "1": [string, number];
-    "2": [string, number];
-    "3": [string, number];
-    "4": [string, number];
-    "5": [string, number];
+    "1": [string, string, number];
+    "2": [string, string, number];
+    "3": [string, string, number];
+    "4": [string, string, number];
+    "5": [string, string, number];
   };
   original_img_url: string;
   scaled_img_url: string;
   activation_urls: string[];
 };
 
-
 const App = () => {
   const [file, setFile] = useState<File | null>(null);
   const [fileUrl, setFileUrl] = useState<string>("");
 
   const [response, setResponse] = useState<Response | null>(null);
+  const t = useRef<Toast>(null);
+
   async function getPrediction() {
+    const t = toast("Sending image for processing!", {
+      position: "top-right",
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+      autoClose: false,
+    });
     var formdata = new FormData();
     if (!file) {
       return;
     }
     formdata.append("photo", file, "/C:/Users/Piotr/Pictures/goodkid.png");
-    await axios
-      .post<Response>("http://3.79.99.236:8000/upload", formdata)
-      .then((res) => {
-        if (res.status != HttpStatusCode.Ok) {
-          return;
-        }
-        setResponse(res.data);
-        console.log(res.data);
+    try {
+      await axios
+        .post<Response>("https://3.79.115.96:8000/upload", formdata)
+        .then((res) => {
+          if (res.status != HttpStatusCode.Ok) {
+            return;
+          }
+          setResponse(res.data);
+          toast.update(t, {
+            render: "Success!",
+            autoClose: 2000,
+          });
+        });
+    } catch (err) {
+      console.log(err);
+      toast.update(t, {
+        render: "Something went wrong!",
+        type: "error",
+        autoClose: 2000,
       });
+    }
   }
 
   return (
     <div className="snap-y snap-mandatory h-screen overflow-y-scroll scroll-smooth text-slate-200">
       <Background />
+      <ToastContainer />
       <section className="relative h-screen snap-start">
         <section
           className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 transition-all ${
@@ -76,7 +104,7 @@ const App = () => {
                 type="file"
                 className="file-input file-input-ghost w-full"
                 onChange={(e) => {
-                  setResponse(null)
+                  setResponse(null);
                   if (!e.target.files || e.target.files.length <= 0) {
                     setFile(null);
                     setFileUrl("");
@@ -101,7 +129,9 @@ const App = () => {
           <div className="w-96 h-96 aspect-square bg-[#0b0b0b] flex flex-col rounded-md box-content p-4">
             <div className="grow flex items-center justify-center w-96">
               {response ? (
-                <PredictionSlider image={response.scaled_img_url} predictions={response.predictions}/>
+                <PredictionSlider
+                  predictions={response.predictions}
+                />
               ) : (
                 <div className="text-center"> No image provided </div>
               )}
