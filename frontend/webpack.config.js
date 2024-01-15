@@ -4,7 +4,7 @@ const ModuleFederationPlugin = require("webpack/lib/container/ModuleFederationPl
 const deps = require("./package.json").dependencies;
 module.exports = (_, argv) => ({
   output: {
-    publicPath: "http://localhost:3000/",
+    publicPath: "auto",
   },
 
   resolve: {
@@ -13,6 +13,7 @@ module.exports = (_, argv) => ({
 
   devServer: {
     port: 3000,
+    host: '0.0.0.0',
     historyApiFallback: true,
   },
 

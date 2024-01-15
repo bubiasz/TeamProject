@@ -44,11 +44,15 @@ class ModelFacade(object):
         with open(os.path.join(model_dir, "data", "species.pkl"), "rb") as f:
             self.__species = pickle.load(f)
 
+        #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model = torch.load(
             os.path.join(model_dir, model_name), map_location=device)
         
-        self.__model = model.cuda() if device == "cuda" else model.cpu()
+        
+       # self.__model = model.cuda() if device == "cuda" else model.cpu()
+        self.__model = model.cpu()
         self.__model_multi = torch.nn.DataParallel(self.__model)
 
         if not self.__sanity_check(model_dir):
@@ -95,10 +99,10 @@ class ModelFacade(object):
         img_tensor = self.__preprocess(Image.open(img_path).convert("RGB"))
         img_variable = Variable(img_tensor.unsqueeze(0))
 
-        try:
-            img_variable = img_variable.cuda()
-        except AssertionError:
-            img_variable = img_variable.cpu()
+        #try:
+         #   img_variable = img_variable.cuda()
+     #   except AssertionError:
+        img_variable = img_variable.cpu()
 
         return img_variable
 
@@ -121,8 +125,9 @@ class ModelFacade(object):
         topk = torch.topk(torch.softmax(logits, dim=1), k=5)
 
         predictions = {k: v for k, v in zip(range(1, 6), zip(
-            (self.__species[i] for i in topk.indices[0].cpu().detach().numpy()),
-            (round(i * 100, 2) for i in topk.values[0].cpu().detach().numpy())
+                (self.__species[i][0] for i in topk.indices[0].cpu().detach().numpy()),
+                (self.__species[i][1] for i in topk.indices[0].cpu().detach().numpy()),
+                (round(i * 100, 2) for i in topk.values[0].cpu().detach().numpy())
         ))}
 
         img_copy = copy.deepcopy(img_tens[0:1])

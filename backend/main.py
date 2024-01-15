@@ -10,12 +10,13 @@ import botocore.exceptions as exceptions
 from dotenv import load_dotenv
 from pydantic import BaseModel
 import matplotlib.pyplot as plt
-from fastapi import FastAPI, HTTPException, UploadFile, CORSMiddleware
-
+from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from facade import ModelFacade
 
 
 app = FastAPI()
+
 
 app.add_middleware(
         CORSMiddleware,
@@ -25,6 +26,7 @@ app.add_middleware(
         allow_headers=["*"],
 )
 
+
 base = os.getcwd()
 
 model = ModelFacade()
@@ -33,10 +35,13 @@ model.load_model(os.path.join(base, "models"), "100push0.7413.pth")
 load_dotenv()
 s3_client = boto3.client(
     's3',
-    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+    aws_access_key_id='AKIA5H4R4IWUZOWN7QWN',
+#os.getenv('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key='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'
+#os.getenv('AWS_SECRET_ACCESS_KEY'),
 )
-aws_bucket_name = os.getenv('AWS_BUCKET_NAME')
+aws_bucket_name = "imagebucket2teamproject"
+# os.getenv('AWS_BUCKET_NAME')
 
 
 class Response(BaseModel):
@@ -61,6 +66,13 @@ def s3_upload_file(local_path, amazon_path):
 
 @app.post("/upload", response_model=Response)
 async def upload(photo: UploadFile):
+
+    # Initialize variables
+    predictions = {}
+    original_img_url = ''
+    scaled_img_url = ''
+    activations_urls = []
+
     """
     Uploads a photo and returns predicted species with corresponding confidence.
     """
