@@ -35,13 +35,11 @@ model.load_model(os.path.join(base, "models"), "100push0.7413.pth")
 load_dotenv()
 s3_client = boto3.client(
     's3',
-    aws_access_key_id='AKIA5H4R4IWUZOWN7QWN',
-#os.getenv('AWS_ACCESS_KEY_ID'),
-    aws_secret_access_key='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'
-#os.getenv('AWS_SECRET_ACCESS_KEY'),
+    aws_access_key_id= os.getenv('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
 )
-aws_bucket_name = "imagebucket2teamproject"
-# os.getenv('AWS_BUCKET_NAME')
+aws_bucket_name = os.getenv('AWS_BUCKET_NAME')
+
 
 
 class Response(BaseModel):
