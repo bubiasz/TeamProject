@@ -1,16 +1,16 @@
+/** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: false, // or 'media' or 'class'
-  content: [
-    './src/**/*.{js,jsx,ts,tsx}' ,
-    'node_modules/flowbite-react/**/*.{js,jsx,ts,tsx}',
-  ],
+  darkMode: "media", // or 'media' or 'class'
   theme: {
     extend: {},
   },
   variants: {
     extend: {},
   },
-  plugins: [
-    require('flowbite/plugin'),
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+    'node_modules/daisyui/dist/**/*.js',
+    'node_modules/react-daisyui/dist/**/*.js'
   ],
+  plugins: [require('daisyui')]
 }
