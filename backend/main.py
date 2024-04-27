@@ -12,6 +12,7 @@ from pydantic import BaseModel
 import matplotlib.pyplot as plt
 from fastapi import FastAPI, HTTPException, UploadFile
 from starlette.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 
 from facade import ModelFacade
@@ -32,6 +33,8 @@ base = os.getcwd()
 model = ModelFacade()
 model.load_model(os.path.join(base, "models"), "100push0.7413.pth")
 
+
+"""""
 load_dotenv()
 s3_client = boto3.client(
     "s3",
@@ -41,17 +44,10 @@ s3_client = boto3.client(
 aws_bucket_name = os.getenv("AWS_BUCKET_NAME")
 
 
-class Response(BaseModel):
-    predictions: dict[int, tuple]
-    original_img_url: str
-    scaled_img_url: str
-    activation_urls: list[str]
-
-
 def s3_upload_file(local_path, amazon_path):
-    """
-    Function to upload a file to an S3 bucket
-    """
+    
+    # Function to upload a file to an S3 bucket
+    
     try:
         s3_client.upload_file(local_path, aws_bucket_name, amazon_path)
         return f"https://{aws_bucket_name}.s3.amazonaws.com/{amazon_path}"
@@ -59,6 +55,17 @@ def s3_upload_file(local_path, amazon_path):
         return "Upload failed file not found"
     except exceptions.NoCredentialsError:
         return "Credentials not provided"
+"""
+
+
+class Response(BaseModel):
+    predictions: dict[int, tuple]
+    original_img_url: str
+    scaled_img_url: str
+    activation_urls: list[str]
+
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.post("/upload", response_model=Response)
@@ -66,6 +73,7 @@ async def upload(photo: UploadFile):
     """
     Uploads a photo and returns predicted species with corresponding confidence.
     """
+
     dir_name = "".join(
         secrets.choice(string.ascii_letters + string.digits) for _ in range(22)
     ) + str(int(time.time()))
@@ -74,6 +82,7 @@ async def upload(photo: UploadFile):
     os.makedirs(dir_path)
 
     img_path = os.path.join(dir_path, "upload.jpg")
+
     with open(img_path, "wb") as buffer:
         buffer.write(await photo.read())
 
@@ -94,6 +103,9 @@ async def upload(photo: UploadFile):
     for i, img in enumerate(activations):
         plt.imsave(os.path.join(dir_path, "activations", f"{i}.jpg"), img)
 
+    """
+    For online version
+
     original_img_url = s3_upload_file(
         os.path.join(dir_path, "upload.jpg"), os.path.join(dir_name, "upload.jpg")
     )
@@ -109,12 +121,25 @@ async def upload(photo: UploadFile):
         )
         for i in range(10)
     ]
+    """
 
     shutil.rmtree(os.path.join(dir_path))
 
+    return Response(
+        predictions=predictions,
+        original_img_url=os.path.join("requests", dir_name, "upload.jpg"),
+        scaled_img_url=os.path.join("requests", dir_name, "scaled.jpg"),
+        activation_urls=[
+            os.path.join("requests", dir_name, "activations", f"{i}.jpg")
+            for i in range(10)
+        ],
+    )
+
+    """
     return Response(
         predictions=predictions,
         original_img_url=original_img_url,
         scaled_img_url=scaled_img_url,
         activation_urls=activation_urls,
     )
+    """
