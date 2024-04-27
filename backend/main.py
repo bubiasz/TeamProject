@@ -10,6 +10,7 @@ import botocore.exceptions as exceptions
 from dotenv import load_dotenv
 from pydantic import BaseModel
 import matplotlib.pyplot as plt
+import matplotlib
 from fastapi import FastAPI, HTTPException, UploadFile
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -78,7 +79,7 @@ async def upload(photo: UploadFile):
         secrets.choice(string.ascii_letters + string.digits) for _ in range(22)
     ) + str(int(time.time()))
 
-    dir_path = os.path.join(base, "requests", dir_name)
+    dir_path = os.path.join(base, "static", "requests", dir_name)
     os.makedirs(dir_path)
 
     img_path = os.path.join(dir_path, "upload.jpg")
@@ -123,14 +124,22 @@ async def upload(photo: UploadFile):
     ]
     """
 
-    shutil.rmtree(os.path.join(dir_path))
-
     return Response(
         predictions=predictions,
-        original_img_url=os.path.join("requests", dir_name, "upload.jpg"),
-        scaled_img_url=os.path.join("requests", dir_name, "scaled.jpg"),
+        original_img_url=os.path.join(
+            "http://127.0.0.1:8000/static/", "requests", dir_name, "upload.jpg"
+        ),
+        scaled_img_url=os.path.join(
+            "http://127.0.0.1:8000/static/", "requests", dir_name, "scaled.jpg"
+        ),
         activation_urls=[
-            os.path.join("requests", dir_name, "activations", f"{i}.jpg")
+            os.path.join(
+                "http://127.0.0.1:8000/static/",
+                "requests",
+                dir_name,
+                "activations",
+                f"{i}.jpg",
+            )
             for i in range(10)
         ],
     )
