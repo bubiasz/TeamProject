@@ -2,16 +2,19 @@ import React, { useRef, useState } from "react";
 import ReactDOM from "react-dom";
 
 import "./index.css";
-import { Background } from "./components/Background";
+import { Background } from "./components/background";
 import { Input } from "react-daisyui";
 import { IoSend } from "react-icons/io5";
 import axios, { HttpStatusCode } from "axios";
 import ImageSlider from "./components/ImageSlider";
 import PredictionSlider from "./components/PredictionSlider";
+import ImageDisplayer from "./components/ImageDisplayer";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Toast } from "react-toastify/dist/types";
+
+
 
 type Response = {
   predictions: {
@@ -51,7 +54,7 @@ const App = () => {
     formdata.append("photo", file, "/C:/Users/Piotr/Pictures/goodkid.png");
     try {
       await axios
-        .post<Response>("https://3.79.115.96:8000/upload", formdata)
+        .post<Response>("http://127.0.0.1:8000/upload", formdata)
         .then((res) => {
           if (res.status != HttpStatusCode.Ok) {
             return;
@@ -59,7 +62,7 @@ const App = () => {
           setResponse(res.data);
           toast.update(t, {
             render: "Success!",
-            autoClose: 2000,
+            autoClose: 1000,
           });
         });
     } catch (err) {
@@ -67,7 +70,7 @@ const App = () => {
       toast.update(t, {
         render: "Something went wrong!",
         type: "error",
-        autoClose: 2000,
+        autoClose: 1000,
       });
     }
   }
@@ -141,8 +144,9 @@ const App = () => {
       </section>
       {response ? (
         <section className="flex items-center justify-center h-screen snap-start">
-          <div className="w-96 h-96 bg-[#0b0b0b] rounded-md p-4">
-            <ImageSlider imageUrls={response.activation_urls} />
+          <div className="w-3/4 h-min bg-[#0b0b0b] rounded-md p-4">
+          
+            <ImageDisplayer imageUrls={response.activation_urls} />
           </div>
         </section>
       ) : (
