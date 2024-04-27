@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from pydantic import BaseModel
 import matplotlib.pyplot as plt
 import matplotlib
-from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi import FastAPI, HTTPException, UploadFile, Request
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -67,6 +67,24 @@ class Response(BaseModel):
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+@app.post("/heatmap_picker")
+async def heatmap_picker(request: Request):
+    data = await request.json()
+    images = data.get("images")
+
+    def extract_number_from_url(url: str) -> int:
+        parts = url.split("/")
+        filename = parts[-1]
+        number = filename.split(".")[0]
+        return int(number)
+
+    if images:
+        selected_numbers = [extract_number_from_url(image) for image in images]
+        return {"Selected numbers": selected_numbers}
+    else:
+        return {"message": "No images provided"}
 
 
 @app.post("/upload", response_model=Response)
