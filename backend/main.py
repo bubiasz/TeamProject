@@ -15,7 +15,7 @@ from fastapi import FastAPI, HTTPException, UploadFile, Request
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-
+from urllib.parse import urlparse
 from facade import ModelFacade
 
 
@@ -80,8 +80,27 @@ async def heatmap_picker(request: Request):
         number = filename.split(".")[0]
         return int(number)
 
+    def extract_folder_name(url: str) -> str:
+        parsed_url = urlparse(url)
+        path_parts = [part for part in parsed_url.path.split("/") if part]
+        folder_name = path_parts[-3]
+        return folder_name
+
     if images:
         selected_numbers = [extract_number_from_url(image) for image in images]
+        folder_name = extract_folder_name(images[0])
+
+        dir_path = os.path.join(base, "static", "requests", folder_name)
+
+        os.makedirs(os.path.join(dir_path, "selected"))
+
+        for number in selected_numbers:
+            img_path = os.path.join(dir_path, "activations", f"{number}.jpg")
+            shutil.copy(
+                os.path.join(img_path),
+                os.path.join(dir_path, "selected"),
+            )
+
         return {"Selected numbers": selected_numbers}
     else:
         return {"message": "No images provided"}
