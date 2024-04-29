@@ -44,11 +44,13 @@ class ModelFacade(object):
         with open(os.path.join(model_dir, "data", "species.pkl"), "rb") as f:
             self.__species = pickle.load(f)
 
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+       # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cpu")
         model = torch.load(
             os.path.join(model_dir, model_name), map_location=device)
         
-        self.__model = model.cuda() if device == "cuda" else model.cpu()
+        #self.__model = model.cuda() if device == "cuda" else model.cpu()
+        self.__model = model.cpu()
         self.__model_multi = torch.nn.DataParallel(self.__model)
 
         if not self.__sanity_check(model_dir):
@@ -95,13 +97,17 @@ class ModelFacade(object):
         img_tensor = self.__preprocess(Image.open(img_path).convert("RGB"))
         img_variable = Variable(img_tensor.unsqueeze(0))
 
+        """
         try:
             img_variable = img_variable.cuda()
         except AssertionError:
             img_variable = img_variable.cpu()
 
         return img_variable
-
+        """
+        img_variable = img_variable.cpu()
+        return img_variable
+    
     def predict(self, img_tens: torch.Tensor) -> (
             dict, np.ndarray, torch.Tensor, torch.Tensor):
         """
