@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
 COPY main.py model.py facade.py vgg_features.py /app/
 COPY models /app/models
 COPY requirements.txt /app
+COPY static/birds /app/static/birds
 
 RUN pip install --no-cache-dir -r requirements.txt
 
