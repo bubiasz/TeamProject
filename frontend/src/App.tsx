@@ -14,8 +14,6 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Toast } from "react-toastify/dist/types";
 
-
-
 type Response = {
   predictions: {
     "1": [string, string, number];
@@ -66,9 +64,14 @@ const App = () => {
           });
         });
     } catch (err) {
-      console.log(err);
+      const errorMessage =
+        axios.isAxiosError(err) && err.response
+          ? err.response.status === 403
+            ? "No bird found in the image!"
+            : `Error: ${err.response.status}`
+          : "Something went wrong!";
       toast.update(t, {
-        render: "Something went wrong!",
+        render: errorMessage,
         type: "error",
         autoClose: 1000,
       });
@@ -132,9 +135,7 @@ const App = () => {
           <div className="w-96 h-96 aspect-square bg-[#0b0b0b] flex flex-col rounded-md box-content p-4">
             <div className="grow flex items-center justify-center w-96">
               {response ? (
-                <PredictionSlider
-                  predictions={response.predictions}
-                />
+                <PredictionSlider predictions={response.predictions} />
               ) : (
                 <div className="text-center"> No image provided </div>
               )}
@@ -145,7 +146,6 @@ const App = () => {
       {response ? (
         <section className="flex items-center justify-center h-screen snap-start">
           <div className="w-3/4 h-min bg-[#0b0b0b] rounded-md p-4">
-          
             <ImageDisplayer imageUrls={response.activation_urls} />
           </div>
         </section>
