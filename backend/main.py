@@ -18,6 +18,8 @@ from fastapi.staticfiles import StaticFiles
 from urllib.parse import urlparse
 from facade import ModelFacade
 
+from utils import check_bird
+
 
 app = FastAPI()
 
@@ -126,9 +128,13 @@ async def upload(photo: UploadFile):
 
     try:
         img_tens = model.load_image(img_path)
+        img_tens = img_tens.cuda()
     except FileNotFoundError:
         shutil.rmtree(os.path.join(dir_path))
         raise HTTPException(staus_code=404, detail="Image file not found.")
+
+    if not check_bird(img_path):
+        raise HTTPException(status_code=403, detail="Not a bird image.")
 
     predictions, img_original, prot_act, prot_act_pattern = model.predict(img_tens)
     plt.imsave(os.path.join(dir_path, "scaled.jpg"), img_original)
